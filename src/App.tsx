@@ -7,6 +7,8 @@ import {
   updatePlan,
 } from "./services/Data/plansData";
 
+import "./style/app.css";
+
 export const App = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
 
@@ -25,8 +27,7 @@ export const App = () => {
   // 🔥 delete
   async function handleDelete(id: string) {
     await deletePlan(id);
-    const data = await getPlan();
-    setPlans(data);
+    setPlans((prev) => prev.filter((plan) => plan.id !== id));
   }
 
   // 🔥 iniciar edição
@@ -43,61 +44,84 @@ export const App = () => {
       price: editPrice,
     });
 
-    const data = await getPlan();
-    setPlans(data);
+    setPlans((prev) =>
+      prev.map((plan) =>
+        plan.id === id ? { ...plan, text: editText, price: editPrice } : plan,
+      ),
+    );
 
     // sair do modo edição
     setEditingId(null);
   }
 
   return (
-    <div>
-      Testando firebase
+    <div className="container">
+      <h1>🔥 Planos Firebase</h1>
+
       <button
+        className="btn-add"
         onClick={async () => {
           await addPlan();
           const data = await getPlan();
           setPlans(data);
         }}
       >
-        Adicionar planos
+        Adicionar plano
       </button>
-      <h1>Planos</h1>
-      <ul>
-        {plans.map((plan) => (
-          <li key={plan.id}>
-            {editingId === plan.id ? (
-              <>
-                {/* 🔥 INPUTS */}
-                <input
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                />
 
-                <input
-                  type="number"
-                  value={editPrice}
-                  onChange={(e) => setEditPrice(Number(e.target.value))}
-                />
+      {plans.map((plan) => (
+        <div key={plan.id} className="card">
+          {editingId === plan.id ? (
+            <>
+              <input
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+              />
 
-                {/* 🔥 SALVAR */}
-                <button onClick={() => handleUpdate(plan.id)}>Salvar</button>
+              <input
+                type="number"
+                value={editPrice}
+                onChange={(e) => setEditPrice(Number(e.target.value))}
+              />
 
-                {/* cancelar */}
-                <button onClick={() => setEditingId(null)}>Cancelar</button>
-              </>
-            ) : (
-              <>
+              <div className="row">
+                <button
+                  className="btn-save"
+                  onClick={() => handleUpdate(plan.id)}
+                >
+                  Salvar
+                </button>
+
+                <button
+                  className="btn-cancel"
+                  onClick={() => setEditingId(null)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="row">
+              <span>
                 {plan.text} - ${plan.price.toFixed(2)}
-                {/* editar */}
-                <button onClick={() => handleEdit(plan)}>Editar</button>
-                {/* deletar */}
-                <button onClick={() => handleDelete(plan.id)}>Excluir</button>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+              </span>
+
+              <div style={{ display: "flex", gap: "6px" }}>
+                <button className="btn-edit" onClick={() => handleEdit(plan)}>
+                  Editar
+                </button>
+
+                <button
+                  className="btn-delete"
+                  onClick={() => handleDelete(plan.id)}
+                >
+                  Excluir
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 };
