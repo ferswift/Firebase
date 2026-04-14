@@ -1,13 +1,20 @@
-import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../services/firebaseConfig";
+import { useContext, useState } from "react";
 
 import "../style/app.css";
 import { Link } from "react-router-dom";
+import { loginFirebase } from "../services/Auth";
+import { AuthContext } from "../Context/AuthContext";
+import { auth } from "../services/firebaseConfig";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const { setUser } = useContext(AuthContext)!;
+
+  if (!auth) {
+    throw new Error("AuthContext não encontrado");
+  }
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -16,8 +23,9 @@ export const Login = () => {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email.trim(), password);
-      alert("Login bem-sucedido!");
+      const user = await loginFirebase(email, password);
+
+      setUser(user);
     } catch (error) {
       console.error(error);
       alert("Erro ao logar");
